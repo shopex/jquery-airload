@@ -73,3 +73,21 @@ $.pageReady = function(el){
     }
   })
 }
+
+$.airloadSetup = function(el, cfg){
+  var context = $.extend({
+      success: function(){},
+      start: function(){},
+      error: function(rsp){
+        if(rsp.responseText){
+          window.history.pushState(null , "" ,url);
+          document.body.innerHTML = rsp.responseText;
+        }
+      },
+      complete: function(){}
+    }, cfg);
+  $.pageReady.call(context, el);
+  window.onpopstate=function(s){
+    $.loadPage.call(context, document.location.href, {}, true);
+  }
+}
