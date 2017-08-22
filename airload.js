@@ -1,6 +1,10 @@
 $.loadPage = function(url, options, skip_state){
     var that = this;
-    $.ajax(url, $.extend(options, {
+
+    if(that.prevRequest){
+      that.prevRequest.abort();
+    }
+    that.prevRequest = $.ajax(url, $.extend(options, {
       headers: {'X-Airload': 'true'},
       success:function(rsp, status, request){
         if( typeof(rsp) == "string" ){
@@ -12,9 +16,13 @@ $.loadPage = function(url, options, skip_state){
           if($('title', el)){
             document.title = $('title', el).html();
           }
-          $('.main-content', document.body).html($('.main-content', el).html());
+
+          for(var i in that.slot){
+            $(that.slot[i]).replaceWith($(that.slot[i], el));
+            $.pageReady.call(that, that.slot[i]);
+          }
+
           $('body').scrollTop(0)
-          $.pageReady.call(that, $('.main-content'));
         }
         that.success();
       },
@@ -28,6 +36,7 @@ $.loadPage = function(url, options, skip_state){
         that.error(rsp);
       },
       complete: function(){
+        that.prevRequest = null;        
         that.complete();
       }
     }));
@@ -76,6 +85,8 @@ $.pageReady = function(el){
 
 $.airloadSetup = function(el, cfg){
   var context = $.extend({
+      requestIdx:0,
+      slot: ['.main-content'],
       success: function(){},
       start: function(){},
       error: function(rsp){
