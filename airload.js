@@ -18,8 +18,12 @@ $.loadPage = function(url, options, skip_state){
           }
 
           for(var i in that.slot){
-            $(that.slot[i]).replaceWith($(that.slot[i], el));
-            $.pageReady.call(that, that.slot[i]);
+            var replaceBy = $(that.slot[i], el);
+            if(replaceBy.length>0){
+              $(that.slot[i]).replaceWith(replaceBy);
+            }else{
+              $(that.slot[i]).html('');
+            }
           }
 
           $('body').scrollTop(0)
@@ -45,42 +49,64 @@ $.loadPage = function(url, options, skip_state){
 
 $.pageReady = function(el){
   var that = this;
-  $('form', el).each(function(_, frm){
-    frm = $(frm);
-    if(!frm.hasClass('external') && !frm.attr('airload')){
-      frm.bind('submit', function(e){
+  $(el).bind('submit', function(e){
+    try{
+      var el = e.target;
+      if(el.tagName!='FORM'){
+        el = $(el).parents('form');
+        if(el.length==0){
+          return;
+        }
+      }
+      el = $(el);
+      if(!el.hasClass('external') && !el.attr('target')){
         e.stopPropagation();
-        var url = frm.attr('action');
+        e.preventDefault();
+        var url = el.attr('action');
         if(!url){
           url = document.location.href;
         }
         $.loadPage.call(that, url, {
-          method: frm.attr('method'),
-          data: frm.serialize()
+          method: el.attr('method'),
+          data: el.serialize()
         });
-        return false;
-      })
-      frm.attr('airload', 'true');
+      }
+    }catch(err){
+      e.stopPropagation();
+      if(console && console.error)console.error(err);
+      return false;
     }
-  })
+  });
 
-  $('a[href]', el).each(function(_, a){
-    a = $(a);
-    if(!a.hasClass('external') && !a.attr('airload')){
-      a.attr('airload', 'true');
-      a.bind('click', function(e){
-        var href = a.attr('href');
+  $(el).bind('click', function(e){
+    try{
+      var el = e.target;
+      if(el.tagName!='A'){
+        el = $(el).parents('a');
+        if(el.length==0){
+          return;
+        }
+      }
+      el = $(el);
+      var href = el.attr('href');      
+      if(!el.hasClass('external') && href!=undefined && !el.attr('target')){
         if( href == '' ){
           href = document.location.href;
         }
-        if(href.substr(0,1)!='#' && e.metaKey==false){
+        if(href.substr(0,1)!='#' && e.metaKey==false){        
           e.stopPropagation();
+          e.preventDefault();
           $.loadPage.call(that, href);
           return false;
         }
-      })
+      }
+    }catch(err){
+      e.stopPropagation();
+      e.preventDefault();
+      if(console && console.error) console.error(err);
+      return false;
     }
-  })
+  });
 }
 
 $.airloadSetup = function(el, cfg){
