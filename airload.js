@@ -93,7 +93,7 @@ $.pageReady = function(el){
         if( href == '' ){
           href = document.location.href;
         }
-        if(href.substr(0,1)!='#' && e.metaKey==false){        
+        if(href.substr(0,1)!='#' && !e.metaKey){
           e.stopPropagation();
           e.preventDefault();
           $.loadPage.call(that, href);
