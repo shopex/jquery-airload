@@ -66,10 +66,31 @@ $.pageReady = function(el){
         if(!url){
           url = document.location.href;
         }
-        $.loadPage.call(that, url, {
-          method: el.attr('method'),
-          data: el.serialize()
-        });
+
+        var uploads = $('input[type=file]', el);
+        if(uploads.length>0){
+          var formData = new FormData();
+          $(el.serializeArray()).each(function(i, item){
+            formData.append(item.name, item.value);
+          });
+
+          uploads.each(function(i, ipt){
+            formData.append($(ipt).attr('name'), ipt.files[0]);
+          });
+
+          $.loadPage.call(that, url, {
+            method: el.attr('method'),
+            data: formData,
+            cache: false,
+            processData: false,
+            contentType: false
+          });
+        }else{
+          $.loadPage.call(that, url, {
+            method: el.attr('method'),
+            data: el.serialize(),
+          });
+        }
       }
     }catch(err){
       e.stopPropagation();
