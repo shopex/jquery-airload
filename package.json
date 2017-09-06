@@ -1,6 +1,6 @@
 {
   "name": "jquery-airload",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "airload page in jquery",
   "main": "airload.js",
   "scripts": {
